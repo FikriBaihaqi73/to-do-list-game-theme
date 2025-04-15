@@ -36,8 +36,9 @@ function loadQuests() {
         const stats = JSON.parse(savedStats);
         level = stats.level;
         xp = stats.xp;
-        requiredXp = stats.requiredXp;
         baseRequiredXp = stats.baseRequiredXp || 100;
+        // Recalculate required XP based on current level to ensure consistency
+        requiredXp = getRequiredXpForLevel(level);
         completedCount = stats.completedCount;
         updateStats();
     }
@@ -117,11 +118,13 @@ function toggleComplete(id) {
 
 // Calculate required XP for a specific level
 function getRequiredXpForLevel(targetLevel) {
-    let xp = baseRequiredXp;
+    if (targetLevel <= 1) return baseRequiredXp;
+    
+    let xpRequired = baseRequiredXp;
     for (let i = 1; i < targetLevel; i++) {
-        xp = Math.floor(xp * 1.5);
+        xpRequired = Math.floor(xpRequired * 1.5);
     }
-    return xp;
+    return xpRequired;
 }
 
 // Gain XP and check for level up or down
@@ -157,13 +160,16 @@ function levelUp() {
 // Level down
 function levelDown() {
     level--;
-    // Calculate required XP for current level
-    requiredXp = getRequiredXpForLevel(level + 1);
-    // Calculate required XP for previous level
-    const previousLevelXp = getRequiredXpForLevel(level);
     
-    // Set XP to partway through previous level
-    xp = xp + previousLevelXp;
+    // Get the required XP for current level (after leveling down)
+    requiredXp = getRequiredXpForLevel(level + 1);
+    
+    // Add the XP needed for the previous level to the current negative XP
+    // This effectively places the player somewhere in the previous level
+    xp = getRequiredXpForLevel(level) + xp;
+    
+    // Make sure XP doesn't go negative
+    if (xp < 0) xp = 0;
     
     updateStats();
     showLevelDown();
