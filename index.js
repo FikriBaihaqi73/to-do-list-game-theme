@@ -5,6 +5,7 @@ let requiredXp = 100;
 let completedCount = 0;
 let quests = [];
 let currentFilter = 'all';
+let baseRequiredXp = 100; // Base XP for level 1
 
 // DOM elements
 const questInput = document.getElementById('quest-input');
@@ -36,6 +37,7 @@ function loadQuests() {
         level = stats.level;
         xp = stats.xp;
         requiredXp = stats.requiredXp;
+        baseRequiredXp = stats.baseRequiredXp || 100;
         completedCount = stats.completedCount;
         updateStats();
     }
@@ -49,6 +51,7 @@ function saveQuests() {
         level,
         xp,
         requiredXp,
+        baseRequiredXp,
         completedCount
     };
     
@@ -82,6 +85,8 @@ function deleteQuest(id) {
     
     if (quests[questIndex].completed) {
         completedCount--;
+        // Remove XP when completed quest is deleted
+        gainXp(-25);
     }
     
     quests = quests.filter(quest => quest.id !== id);
@@ -110,13 +115,26 @@ function toggleComplete(id) {
     updateStats();
 }
 
-// Gain XP and check for level up
+// Calculate required XP for a specific level
+function getRequiredXpForLevel(targetLevel) {
+    let xp = baseRequiredXp;
+    for (let i = 1; i < targetLevel; i++) {
+        xp = Math.floor(xp * 1.5);
+    }
+    return xp;
+}
+
+// Gain XP and check for level up or down
 function gainXp(amount) {
     xp += amount;
     
     if (xp >= requiredXp) {
         levelUp();
+    } else if (xp < 0 && level > 1) {
+        // Level down if XP goes below 0 and not at level 1
+        levelDown();
     } else if (xp < 0) {
+        // Just reset XP to 0 if at level 1
         xp = 0;
     }
 }
@@ -125,7 +143,7 @@ function gainXp(amount) {
 function levelUp() {
     level++;
     xp = xp - requiredXp;
-    requiredXp = Math.floor(requiredXp * 1.5);
+    requiredXp = getRequiredXpForLevel(level + 1);
     
     updateStats();
     showLevelUp();
@@ -136,9 +154,38 @@ function levelUp() {
     }
 }
 
+// Level down
+function levelDown() {
+    level--;
+    // Calculate required XP for current level
+    requiredXp = getRequiredXpForLevel(level + 1);
+    // Calculate required XP for previous level
+    const previousLevelXp = getRequiredXpForLevel(level);
+    
+    // Set XP to partway through previous level
+    xp = xp + previousLevelXp;
+    
+    updateStats();
+    showLevelDown();
+}
+
 // Show level up animation
 function showLevelUp() {
     newLevelElement.textContent = level;
+    levelUpElement.querySelector('h2').textContent = 'Level Up!';
+    levelUpElement.querySelector('p:last-child').textContent = 'New abilities unlocked!';
+    levelUpElement.classList.add('show');
+    
+    setTimeout(() => {
+        levelUpElement.classList.remove('show');
+    }, 3000);
+}
+
+// Show level down animation
+function showLevelDown() {
+    newLevelElement.textContent = level;
+    levelUpElement.querySelector('h2').textContent = 'Level Down';
+    levelUpElement.querySelector('p:last-child').textContent = 'Keep working on your quests!';
     levelUpElement.classList.add('show');
     
     setTimeout(() => {
