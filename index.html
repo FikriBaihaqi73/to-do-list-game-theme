@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game-Themed To-Do List</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="container">
+        <div class="game-ui">
+            <div class="header">
+                <h1>Epic Quest Log</h1>
+            </div>
+            
+            <div class="level-progress">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-title">LEVEL</div>
+                    <div class="stat-value" id="level">1</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-title">XP</div>
+                    <div class="stat-value"><span id="current-xp">0</span>/<span id="required-xp">100</span></div>
+                </div>
+                <div class="stat">
+                    <div class="stat-title">QUESTS COMPLETED</div>
+                    <div class="stat-value" id="completed-quests">0</div>
+                </div>
+            </div>
+            
+            <div class="quest-input">
+                <input type="text" id="quest-input" placeholder="Enter a new quest...">
+                <button id="add-quest-btn">Add Quest</button>
+            </div>
+            
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">All Quests</button>
+                <button class="filter-btn" data-filter="active">Active Quests</button>
+                <button class="filter-btn" data-filter="completed">Completed</button>
+            </div>
+            
+            <ul class="quest-list" id="quest-list">
+                <!-- Quests will be added here -->
+                <div class="empty-state">
+                    Your quest log is empty. Add your first quest!
+                </div>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="achievement" id="achievement">
+        <div class="achievement-title">Achievement Unlocked!</div>
+        <div class="achievement-text" id="achievement-text"></div>
+    </div>
+    
+    <div class="level-up" id="level-up">
+        <h2>Level Up!</h2>
+        <p>You've reached level <span id="new-level">2</span>!</p>
+        <p>New abilities unlocked!</p>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+</html>
