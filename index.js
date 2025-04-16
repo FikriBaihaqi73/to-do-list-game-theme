@@ -37,9 +37,11 @@ function loadQuests() {
         level = stats.level;
         xp = stats.xp;
         baseRequiredXp = stats.baseRequiredXp || 100;
-        // Recalculate required XP based on current level to ensure consistency
-        requiredXp = getRequiredXpForLevel(level);
         completedCount = stats.completedCount;
+        
+        // Set required XP based on current level
+        requiredXp = getRequiredXpForLevel(level);
+        
         updateStats();
     }
 }
@@ -106,6 +108,11 @@ function toggleComplete(id) {
         completedCount++;
         gainXp(25);
         showAchievement('Quest Completed', '+25 XP gained!');
+        
+        // If we're in active view, update the filter to remove this quest
+        if (currentFilter === 'active') {
+            renderQuests();
+        }
     } else {
         completedCount--;
         gainXp(-25);
@@ -118,8 +125,11 @@ function toggleComplete(id) {
 
 // Calculate required XP for a specific level
 function getRequiredXpForLevel(targetLevel) {
+    // First level is always fixed at baseRequiredXp (100)
     if (targetLevel <= 1) return baseRequiredXp;
     
+    // For level 2, it's 1.5 * baseRequiredXp (150)
+    // For level 3, it's 1.5 * level 2 XP (225), etc.
     let xpRequired = baseRequiredXp;
     for (let i = 1; i < targetLevel; i++) {
         xpRequired = Math.floor(xpRequired * 1.5);
@@ -146,6 +156,8 @@ function gainXp(amount) {
 function levelUp() {
     level++;
     xp = xp - requiredXp;
+    
+    // Calculate new required XP for the NEXT level
     requiredXp = getRequiredXpForLevel(level + 1);
     
     updateStats();
@@ -161,12 +173,15 @@ function levelUp() {
 function levelDown() {
     level--;
     
-    // Get the required XP for current level (after leveling down)
+    // Calculate the required XP for current level (after leveling down)
+    let previousLevelXp = getRequiredXpForLevel(level);
+    
+    // Set required XP for the NEXT level after leveling down
     requiredXp = getRequiredXpForLevel(level + 1);
     
     // Add the XP needed for the previous level to the current negative XP
     // This effectively places the player somewhere in the previous level
-    xp = getRequiredXpForLevel(level) + xp;
+    xp = previousLevelXp + xp;
     
     // Make sure XP doesn't go negative
     if (xp < 0) xp = 0;
